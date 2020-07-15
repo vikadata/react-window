@@ -204,7 +204,7 @@ const getOffsetForIndexAndAlignment = (itemType: ItemType, props: Props<any>, in
       return minOffset;
     case 'center':
       return Math.round(minOffset + (maxOffset - minOffset) / 2);
-    case 'auto':default:
+    case 'auto': default:
       if (scrollOffset >= minOffset && scrollOffset <= maxOffset) {
         return scrollOffset;
       } else if (minOffset > maxOffset) {
@@ -296,11 +296,11 @@ const VariableSizeGrid = createGridComponent({
       rowMetadataMap: {}
     };
 
-    instance.resetAfterColumnIndex = (columnIndex: number, shouldForceUpdate?: boolean = true) => {
+    instance.resetAfterColumnIndex = (columnIndex: number, shouldForceUpdate?: boolean) => {
       instance.resetAfterIndices({ columnIndex, shouldForceUpdate });
     };
 
-    instance.resetAfterRowIndex = (rowIndex: number, shouldForceUpdate?: boolean = true) => {
+    instance.resetAfterRowIndex = (rowIndex: number, shouldForceUpdate?: boolean) => {
       instance.resetAfterIndices({ rowIndex, shouldForceUpdate });
     };
 

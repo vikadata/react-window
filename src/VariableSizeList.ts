@@ -179,7 +179,7 @@ const VariableSizeList = createListComponent({
         return minOffset;
       case 'center':
         return Math.round(minOffset + (maxOffset - minOffset) / 2);
-      case 'auto':default:
+      case 'auto': default:
         if (scrollOffset >= minOffset && scrollOffset <= maxOffset) {
           return scrollOffset;
         } else if (scrollOffset < minOffset) {
@@ -231,7 +231,7 @@ const VariableSizeList = createListComponent({
       lastMeasuredIndex: -1
     };
 
-    instance.resetAfterIndex = (index: number, shouldForceUpdate?: boolean = true) => {
+    instance.resetAfterIndex = (index: number, shouldForceUpdate?: boolean) => {
       instanceProps.lastMeasuredIndex = Math.min(instanceProps.lastMeasuredIndex, index - 1);
 
       // We could potentially optimize further by only evicting styles after this index,

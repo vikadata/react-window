@@ -7,16 +7,16 @@ import { Props, ScrollToAlign } from "./createListComponent";
 const FixedSizeList = createListComponent({
   getItemOffset: ({
     itemSize
-  }: Props<any>, index: number): number => index * ((itemSize as any) as number),
+  }: Props<any>, index: number): number => index * (itemSize as number),
 
   getItemSize: ({
     itemSize
-  }: Props<any>, index: number): number => ((itemSize as any) as number),
+  }: Props<any>, index: number): number => (itemSize as number),
 
   getEstimatedTotalSize: ({
     itemCount,
     itemSize
-  }: Props<any>) => ((itemSize as any) as number) * itemCount,
+  }: Props<any>) => (itemSize as number) * itemCount,
 
   getOffsetForIndexAndAlignment: ({
     direction,
@@ -59,7 +59,7 @@ const FixedSizeList = createListComponent({
             return middleOffset;
           }
         }
-      case 'auto':default:
+      case 'auto': default:
         if (scrollOffset >= minOffset && scrollOffset <= maxOffset) {
           return scrollOffset;
         } else if (scrollOffset < minOffset) {

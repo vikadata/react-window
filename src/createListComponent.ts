@@ -21,7 +21,7 @@ type RenderComponentProps<T> = {
   isScrolling?: boolean;
   style: Object;
 };
-type RenderComponent<T> = React$ComponentType<$Shape<RenderComponentProps<T>>>;
+type RenderComponent<T> = React.ComponentType<RenderComponentProps<T>>;
 
 type ScrollDirection = "forward" | "backward";
 
@@ -65,7 +65,7 @@ export type Props<T> = {
   height: number | string;
   initialScrollOffset?: number;
   innerRef?: any;
-  innerElementType?: string | React$AbstractComponent<InnerProps, any>;
+  innerElementType?: string | any;
   innerTagName?: string; // deprecated
   itemCount: number;
   itemData: T;
@@ -75,7 +75,7 @@ export type Props<T> = {
   onItemsRendered?: onItemsRenderedCallback;
   onScroll?: onScrollCallback;
   outerRef?: any;
-  outerElementType?: string | React$AbstractComponent<OuterProps, any>;
+  outerElementType?: string | any;
   outerTagName?: string; // deprecated
   overscanCount: number;
   style?: Object;
@@ -106,8 +106,8 @@ const defaultItemKey = (index: number, data: any) => index;
 
 // In DEV mode, this Set helps us only log a warning once per component instance.
 // This avoids spamming the console every time a render happens.
-let devWarningsDirection = null;
-let devWarningsTagName = null;
+let devWarningsDirection: any = null;
+let devWarningsTagName: any = null;
 if (process.env.NODE_ENV !== 'production') {
   if (typeof window !== 'undefined' && typeof window.WeakSet !== 'undefined') {
     devWarningsDirection = new WeakSet();
@@ -165,7 +165,7 @@ export default function createListComponent({
       super(props);
     }
 
-    static getDerivedStateFromProps(nextProps: Props<T>, prevState: State): $Shape<State> | null {
+    static getDerivedStateFromProps(nextProps: Props<any>, prevState: State): State | null {
       validateSharedProps(nextProps, prevState);
       validateProps(nextProps);
       return null;
@@ -343,7 +343,7 @@ export default function createListComponent({
       }));
     }
 
-    _callOnItemsRendered: (overscanStartIndex: number, overscanStopIndex: number, visibleStartIndex: number, visibleStopIndex: number) => void;
+    // _callOnItemsRendered: (overscanStartIndex: number, overscanStopIndex: number, visibleStartIndex: number, visibleStopIndex: number) => void;
     _callOnItemsRendered = memoizeOne((overscanStartIndex: number, overscanStopIndex: number, visibleStartIndex: number, visibleStopIndex: number) => ((this.props.onItemsRendered as any) as onItemsRenderedCallback)({
       overscanStartIndex,
       overscanStopIndex,
@@ -351,7 +351,7 @@ export default function createListComponent({
       visibleStopIndex
     }));
 
-    _callOnScroll: (scrollDirection: ScrollDirection, scrollOffset: number, scrollUpdateWasRequested: boolean) => void;
+    // _callOnScroll: (scrollDirection: ScrollDirection, scrollOffset: number, scrollUpdateWasRequested: boolean) => void;
     _callOnScroll = memoizeOne((scrollDirection: ScrollDirection, scrollOffset: number, scrollUpdateWasRequested: boolean) => ((this.props.onScroll as any) as onScrollCallback)({
       scrollDirection,
       scrollOffset,
@@ -383,7 +383,7 @@ export default function createListComponent({
     // So that pure component sCU will prevent re-renders.
     // We maintain this cache, and pass a style prop rather than index,
     // So that List can clear cached styles and force item re-render if necessary.
-    _getItemStyle: (index: number) => Object;
+    // _getItemStyle: (index: number) => Object;
     _getItemStyle = (index: number): Object => {
       const {
         direction,
@@ -418,8 +418,8 @@ export default function createListComponent({
       return style;
     };
 
-    _getItemStyleCache: (_: any, __: any, ___: any) => ItemStyleCache;
-    _getItemStyleCache = memoizeOne((_: any, __: any, ___: any) => ({}));
+    // _getItemStyleCache: (_: any, __: any, ___: any) => ItemStyleCache;
+    _getItemStyleCache = memoizeOne((_: any, __: any, ___: any): ItemStyleCache => ({}));
 
     _getRangeToRender(): [number, number, number, number] {
       const {
@@ -548,7 +548,7 @@ export default function createListComponent({
       this.setState({ isScrolling: false }, () => {
         // Clear style cache after state update has been committed.
         // This way we don't break pure sCU for items that don't use isScrolling param.
-        this._getItemStyleCache(-1, null);
+        this._getItemStyleCache(-1, null, null);
       });
     };
   };

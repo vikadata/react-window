@@ -20,7 +20,7 @@ type RenderComponentProps<T> = {
   rowIndex: number;
   style: Object;
 };
-export type RenderComponent<T> = React.Component<RenderComponentProps<T>>;
+export type RenderComponent<T> = React.ComponentType<RenderComponentProps<T>>;
 
 type ScrollDirection = "forward" | "backward";
 
@@ -202,7 +202,7 @@ export default function createGridComponent({
       super(props);
     }
 
-    static getDerivedStateFromProps(nextProps: Props<T>, prevState: State): $Shape<State> | null {
+    static getDerivedStateFromProps(nextProps: Props<any>, prevState: State): $Shape<State> | null {
       validateSharedProps(nextProps, prevState);
       validateProps(nextProps);
       return null;
@@ -401,7 +401,7 @@ export default function createGridComponent({
       const estimatedTotalHeight = getEstimatedTotalHeight(this.props, this._instanceProps);
       const estimatedTotalWidth = getEstimatedTotalWidth(this.props, this._instanceProps);
 
-      return createElement(outerElementType || outerTagName || 'div', {
+      return createElement('div', {
         className,
         onScroll: this._onScroll,
         ref: this._outerRefSetter,
@@ -415,7 +415,7 @@ export default function createGridComponent({
           direction,
           ...style
         }
-      }, createElement(innerElementType || innerTagName || 'div', {
+      }, createElement('div', {
         children: items,
         ref: innerRef,
         style: {
@@ -656,7 +656,7 @@ export default function createGridComponent({
       this.setState({ isScrolling: false }, () => {
         // Clear style cache after state update has been committed.
         // This way we don't break pure sCU for items that don't use isScrolling param.
-        this._getItemStyleCache(-1);
+        this._getItemStyleCache(-1, null, null);
       });
     };
   };
