@@ -63,6 +63,14 @@ type InnerProps = {
   };
 };
 
+
+
+type IColumns = {
+  id: string;
+  title: string;
+  width: number;
+}
+
 export type Props<T> = {
   children: RenderComponent<T>;
   className?: string;
@@ -76,11 +84,9 @@ export type Props<T> = {
   innerElementType?: string | React.Component<InnerProps, any>;
   innerTagName?: string; // deprecated
   itemData: T;
-  itemKey?: (params: {
-    columnIndex: number;
-    data: T;
-    rowIndex: number;
-  }) => any;
+  itemKey?: (params: { columnIndex: number; data: T; rowIndex: number; }) => any;
+  itemRowKey?: (params: { rowIndex: number; data: T }) => any;
+  frozenColCount?: number;
   onItemsRendered?: OnItemsRenderedCallback;
   onScroll?: OnScrollCallback;
   outerRef?: any;
@@ -142,6 +148,12 @@ const defaultItemKey = ({ columnIndex, data, rowIndex }: {
   data: any;
   rowIndex: number
 }) => `${rowIndex}:${columnIndex}`;
+
+const defaultItemRowKey = ({ data, rowIndex }: {
+  data: any;
+  rowIndex: number
+}) => `${rowIndex}`;
+
 
 // In DEV mode, this Set helps us only log a warning once per component instance.
 // This avoids spamming the console every time a render happens.
@@ -366,40 +378,90 @@ export default function createGridComponent({
         innerTagName,
         itemData,
         itemKey = defaultItemKey,
+        itemRowKey = defaultItemRowKey,
         outerElementType,
         outerTagName,
         rowCount,
         style,
         useIsScrolling,
-        width
+        width,
+        frozenColCount = 0,
       } = this.props;
-      const {
-        isScrolling
-      } = this.state;
+      const { isScrolling } = this.state;
 
       const [columnStartIndex, columnStopIndex] = this._getHorizontalRangeToRender();
       const [rowStartIndex, rowStopIndex] = this._getVerticalRangeToRender();
 
       const items = [];
+      const estimatedTotalWidth = getEstimatedTotalWidth(this.props, this._instanceProps);
+
       if (columnCount > 0 && rowCount) {
         for (let rowIndex = rowStartIndex; rowIndex <= rowStopIndex; rowIndex++) {
+          const eachRowChildren = [];
+
+          // handle frozen columns 
+          const frozenColElements: any[] = [];
+          let frozenColWidth = 0;
+          let thisRowTop;
+          [...Array(frozenColCount).keys()].forEach((item, columnIndex) => {
+            frozenColWidth += getColumnWidth(this.props, columnIndex, this._instanceProps)
+            const { top, ...style } = this._getItemStyle(rowIndex, columnIndex) as React.CSSProperties;
+            thisRowTop = top;
+            frozenColElements.push(
+              createElement(children, {
+                columnIndex,
+                data: itemData,
+                isScrolling: useIsScrolling ? isScrolling : undefined,
+                key: itemKey({ columnIndex, data: itemData, rowIndex }),
+                rowIndex,
+                style,
+              })
+            )
+          })
+
+          const frozenCol = createElement(
+            'div',
+            {
+              style: {
+                position: 'sticky',
+                left: 0,
+                width: frozenColWidth,
+                height: getRowHeight(this.props, rowIndex, this._instanceProps),
+              }
+            },
+            ...frozenColElements,
+          )
+          if (frozenColCount > 0) eachRowChildren.push(frozenCol);
+
           for (let columnIndex = columnStartIndex; columnIndex <= columnStopIndex; columnIndex++) {
-            items.push(createElement(children, {
+            if (columnIndex < frozenColCount) continue;
+            const { top, ...style } = this._getItemStyle(rowIndex, columnIndex) as React.CSSProperties;
+            eachRowChildren.push(createElement(children, {
               columnIndex,
               data: itemData,
               isScrolling: useIsScrolling ? isScrolling : undefined,
               key: itemKey({ columnIndex, data: itemData, rowIndex }),
               rowIndex,
-              style: this._getItemStyle(rowIndex, columnIndex)
+              style,
             }));
           }
+          const eachRowEle = createElement('div', {
+            key: itemRowKey({ data: itemData, rowIndex }),
+            'data-record-Id': itemRowKey({ data: itemData, rowIndex }),
+            style: {
+              top: thisRowTop,
+              position: 'absolute',
+              display: 'flex',
+              width: estimatedTotalWidth,
+            }
+          }, ...eachRowChildren);
+          items.push(eachRowEle);
         }
       }
 
       // Read this value AFTER items have been created,
       // So their actual sizes (if variable) are taken into consideration.
       const estimatedTotalHeight = getEstimatedTotalHeight(this.props, this._instanceProps);
-      const estimatedTotalWidth = getEstimatedTotalWidth(this.props, this._instanceProps);
 
       return createElement('div', {
         className,
@@ -484,12 +546,14 @@ export default function createGridComponent({
       const {
         columnWidth,
         direction,
-        rowHeight
+        rowHeight,
       } = this.props;
 
       const itemStyleCache = this._getItemStyleCache(shouldResetStyleCacheOnItemSizeChange && columnWidth, shouldResetStyleCacheOnItemSizeChange && direction, shouldResetStyleCacheOnItemSizeChange && rowHeight);
 
       const key = `${rowIndex}:${columnIndex}`;
+
+      let position = 'absolute';
 
       let style;
       if (itemStyleCache.hasOwnProperty(key)) {
@@ -498,12 +562,12 @@ export default function createGridComponent({
         const offset = getColumnOffset(this.props, columnIndex, this._instanceProps);
         const isRtl = direction === 'rtl';
         itemStyleCache[key] = style = {
-          position: 'absolute',
+          position,
           left: isRtl ? undefined : offset,
           right: isRtl ? offset : undefined,
           top: getRowOffset(this.props, rowIndex, this._instanceProps),
           height: getRowHeight(this.props, rowIndex, this._instanceProps),
-          width: getColumnWidth(this.props, columnIndex, this._instanceProps)
+          width: getColumnWidth(this.props, columnIndex, this._instanceProps),
         };
       }
 
