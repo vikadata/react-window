@@ -443,6 +443,7 @@ export default function createGridComponent({
                 left: 0,
                 width: frozenColWidth,
                 height: getRowHeight(this.props, rowIndex, this._instanceProps),
+                zIndex: 2,
               }
             },
             ...frozenColElements,
@@ -462,8 +463,10 @@ export default function createGridComponent({
             }));
           }
           let rowPosition = 'absolute';
+          let zIndex = 1;
           if (hasHeader && rowIndex === 0) {
             rowPosition = 'sticky';
+            zIndex = 2;
           }
           const eachRowEle = createElement('div', {
             key: itemRowKey({ data: itemData, rowIndex }),
@@ -473,6 +476,7 @@ export default function createGridComponent({
               position: rowPosition,
               display: 'flex',
               width: estimatedTotalWidth,
+              zIndex,
             }
           }, ...eachRowChildren);
           items.push(eachRowEle);
