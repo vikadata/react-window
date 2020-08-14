@@ -87,6 +87,7 @@ export type Props<T> = {
   itemKey?: (params: { columnIndex: number; data: T; rowIndex: number; }) => any;
   itemRowKey?: (params: { rowIndex: number; data: T }) => any;
   frozenColCount?: number;
+  hasHeader?: boolean;
   onItemsRendered?: OnItemsRenderedCallback;
   onScroll?: OnScrollCallback;
   outerRef?: any;
@@ -386,17 +387,32 @@ export default function createGridComponent({
         useIsScrolling,
         width,
         frozenColCount = 0,
+        hasHeader,
       } = this.props;
       const { isScrolling } = this.state;
 
       const [columnStartIndex, columnStopIndex] = this._getHorizontalRangeToRender();
       const [rowStartIndex, rowStopIndex] = this._getVerticalRangeToRender();
-
-      const items = [];
+      const visibleRowsArray = [];
+      const items: any[] = [];
       const estimatedTotalWidth = getEstimatedTotalWidth(this.props, this._instanceProps);
 
+
+      // handle header;
+      if (hasHeader) {
+        visibleRowsArray.push(0);
+      }
+
+      for (let rowIndex = rowStartIndex; rowIndex <= rowStopIndex; rowIndex++) {
+        if (hasHeader && rowIndex === 0) {
+          continue;
+        }
+        visibleRowsArray.push(rowIndex);
+      }
+
+
       if (columnCount > 0 && rowCount) {
-        for (let rowIndex = rowStartIndex; rowIndex <= rowStopIndex; rowIndex++) {
+        visibleRowsArray.forEach(rowIndex => {
           const eachRowChildren = [];
 
           // handle frozen columns 
@@ -445,18 +461,22 @@ export default function createGridComponent({
               style,
             }));
           }
+          let rowPosition = 'absolute';
+          if (hasHeader && rowIndex === 0) {
+            rowPosition = 'sticky';
+          }
           const eachRowEle = createElement('div', {
             key: itemRowKey({ data: itemData, rowIndex }),
             'data-record-Id': itemRowKey({ data: itemData, rowIndex }),
             style: {
               top: thisRowTop,
-              position: 'absolute',
+              position: rowPosition,
               display: 'flex',
               width: estimatedTotalWidth,
             }
           }, ...eachRowChildren);
           items.push(eachRowEle);
-        }
+        })
       }
 
       // Read this value AFTER items have been created,
