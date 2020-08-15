@@ -1,7 +1,7 @@
 {
-  "name": "@vikadata/table",
+  "name": "@vikadata/vikatable",
   "version": "0.0.2",
-  "description": "React components for efficiently rendering large, scrollable lists and tabular data",
+  "description": "A react table with frozen columns and row headers based on react-window",
   "author": "Brian Vaughn <brian.david.vaughn@gmail.com> (https://github.com/bvaughn/)",
   "contributors": [
     "Brian Vaughn <brian.david.vaughn@gmail.com> (https://github.com/bvaughn/)"
