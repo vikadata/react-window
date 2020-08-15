@@ -1,12 +1,9 @@
-import { $Shape } from "utility-types";
-
-
 import memoizeOne from "memoize-one";
 import { createElement, PureComponent } from "react";
-import { cancelTimeout, requestTimeout } from "./timer";
-import { getScrollbarSize, getRTLOffsetType } from "./domHelpers";
-
-import { TimeoutID } from "./timer";
+import { $Shape } from "utility-types";
+import { getRTLOffsetType, getScrollbarSize } from "./domHelpers";
+import { makeTable } from "./makeTable";
+import { cancelTimeout, requestTimeout, TimeoutID } from "./timer";
 
 type Direction = "ltr" | "rtl";
 export type ScrollToAlign = "auto" | "smart" | "center" | "start" | "end";
@@ -87,7 +84,10 @@ export type Props<T> = {
   itemKey?: (params: { columnIndex: number; data: T; rowIndex: number; }) => any;
   itemRowKey?: (params: { rowIndex: number; data: T }) => any;
   frozenColCount?: number;
-  hasHeader?: boolean;
+  hasHeader?: boolean; // 废弃
+  hasFooter?: boolean; // 废弃
+  headerCellRender?: RenderComponent<T>;
+  footerCellRender?: RenderComponent<T>;
   onItemsRendered?: OnItemsRenderedCallback;
   onScroll?: OnScrollCallback;
   outerRef?: any;
@@ -144,13 +144,13 @@ interface ICreateGridComponentProps {
 
 const IS_SCROLLING_DEBOUNCE_INTERVAL = 150;
 
-const defaultItemKey = ({ columnIndex, data, rowIndex }: {
+export const defaultItemKey = ({ columnIndex, data, rowIndex }: {
   columnIndex: number;
   data: any;
   rowIndex: number
 }) => `${rowIndex}:${columnIndex}`;
 
-const defaultItemRowKey = ({ data, rowIndex }: {
+export const defaultItemRowKey = ({ data, rowIndex }: {
   data: any;
   rowIndex: number
 }) => `${rowIndex}`;
@@ -369,147 +369,82 @@ export default function createGridComponent({
 
     render() {
       const {
-        children,
         className,
-        columnCount,
         direction,
         height,
         innerRef,
-        innerElementType,
-        innerTagName,
+        // innerElementType,
+        // innerTagName,
         itemData,
         itemKey = defaultItemKey,
         itemRowKey = defaultItemRowKey,
-        outerElementType,
-        outerTagName,
+        // outerElementType,
+        // outerTagName,
         rowCount,
         style,
         useIsScrolling,
         width,
         frozenColCount = 0,
-        hasHeader,
       } = this.props;
       const { isScrolling } = this.state;
 
       const [columnStartIndex, columnStopIndex] = this._getHorizontalRangeToRender();
       const [rowStartIndex, rowStopIndex] = this._getVerticalRangeToRender();
-      const visibleRowsArray = [];
-      const items: any[] = [];
-      const estimatedTotalWidth = getEstimatedTotalWidth(this.props, this._instanceProps);
-
-
-      // handle header;
-      if (hasHeader) {
-        visibleRowsArray.push(0);
-      }
-
-      for (let rowIndex = rowStartIndex; rowIndex <= rowStopIndex; rowIndex++) {
-        if (hasHeader && rowIndex === 0) {
-          continue;
-        }
-        visibleRowsArray.push(rowIndex);
-      }
-
-
-      if (columnCount > 0 && rowCount) {
-        visibleRowsArray.forEach(rowIndex => {
-          const eachRowChildren = [];
-
-          // handle frozen columns 
-          const frozenColElements: any[] = [];
-          let frozenColWidth = 0;
-          let thisRowTop;
-          [...Array(frozenColCount).keys()].forEach((item, columnIndex) => {
-            frozenColWidth += getColumnWidth(this.props, columnIndex, this._instanceProps)
-            const { top, ...style } = this._getItemStyle(rowIndex, columnIndex) as React.CSSProperties;
-            thisRowTop = top;
-            frozenColElements.push(
-              createElement(children, {
-                columnIndex,
-                data: itemData,
-                isScrolling: useIsScrolling ? isScrolling : undefined,
-                key: itemKey({ columnIndex, data: itemData, rowIndex }),
-                rowIndex,
-                style,
-              })
-            )
-          })
-
-          const frozenCol = createElement(
-            'div',
-            {
-              style: {
-                position: 'sticky',
-                left: 0,
-                width: frozenColWidth,
-                height: getRowHeight(this.props, rowIndex, this._instanceProps),
-                zIndex: 2,
-              }
-            },
-            ...frozenColElements,
-          )
-          if (frozenColCount > 0) eachRowChildren.push(frozenCol);
-
-          for (let columnIndex = columnStartIndex; columnIndex <= columnStopIndex; columnIndex++) {
-            if (columnIndex < frozenColCount) continue;
-            const { top, ...style } = this._getItemStyle(rowIndex, columnIndex) as React.CSSProperties;
-            eachRowChildren.push(createElement(children, {
-              columnIndex,
-              data: itemData,
-              isScrolling: useIsScrolling ? isScrolling : undefined,
-              key: itemKey({ columnIndex, data: itemData, rowIndex }),
-              rowIndex,
-              style,
-            }));
-          }
-          let rowPosition = 'absolute';
-          let zIndex = 1;
-          if (hasHeader && rowIndex === 0) {
-            rowPosition = 'sticky';
-            zIndex = 2;
-          }
-          const eachRowEle = createElement('div', {
-            key: itemRowKey({ data: itemData, rowIndex }),
-            'data-record-Id': itemRowKey({ data: itemData, rowIndex }),
-            style: {
-              top: thisRowTop,
-              position: rowPosition,
-              display: 'flex',
-              width: estimatedTotalWidth,
-              zIndex,
-            }
-          }, ...eachRowChildren);
-          items.push(eachRowEle);
-        })
-      }
-
+      const { tbody, thead, tfoot } = makeTable({
+        props: this.props,
+        _instanceProps: this._instanceProps,
+        visibleRange: {
+          columnStartIndex,
+          columnStopIndex,
+          rowStartIndex,
+          rowStopIndex,
+        },
+        getEstimatedTotalWidth,
+        getColumnWidth,
+        getRowHeight,
+        _getItemStyle: this._getItemStyle,
+        isScrolling,
+      });
       // Read this value AFTER items have been created,
       // So their actual sizes (if variable) are taken into consideration.
+      const estimatedTotalWidth = getEstimatedTotalWidth(this.props, this._instanceProps);
       const estimatedTotalHeight = getEstimatedTotalHeight(this.props, this._instanceProps);
 
-      return createElement('div', {
-        className,
-        onScroll: this._onScroll,
-        ref: this._outerRefSetter,
-        style: {
-          position: 'relative',
-          height,
-          width,
-          overflow: 'auto',
-          WebkitOverflowScrolling: 'touch',
-          willChange: 'transform',
-          direction,
-          ...style
-        }
-      }, createElement('div', {
-        children: items,
-        ref: innerRef,
-        style: {
-          height: estimatedTotalHeight,
-          pointerEvents: isScrolling ? 'none' : undefined,
-          width: estimatedTotalWidth
-        }
-      }));
+      return createElement(
+        'div',
+        {
+          className,
+          onScroll: this._onScroll,
+          ref: this._outerRefSetter,
+          style: {
+            position: 'relative',
+            height,
+            width,
+            overflow: 'auto',
+            WebkitOverflowScrolling: 'touch',
+            willChange: 'transform',
+            direction,
+            ...style
+          }
+        },
+        createElement(
+          'table',
+          {
+            height: estimatedTotalHeight,
+            pointerEvents: isScrolling ? 'none' : undefined,
+            width: estimatedTotalWidth
+          },
+          thead,
+          createElement(
+            'tbody',
+            {
+
+            },
+            tbody,
+          ),
+          tfoot,
+        )
+      );
     }
 
     // _callOnItemsRendered: (overscanColumnStartIndex: number, overscanColumnStopIndex: number, overscanRowStartIndex: number, overscanRowStopIndex: number, visibleColumnStartIndex: number, visibleColumnStopIndex: number, visibleRowStartIndex: number, visibleRowStopIndex: number) => void;
