@@ -15,7 +15,6 @@ enum CellType {
   foot = 'foot',
 }
 
-
 interface IMakeTableProps {
   props: Props<any>;
   visibleRange: IVisibleRange;
@@ -55,6 +54,15 @@ export function makeTable(args: IMakeTableProps) {
   let tfoot;
 
   function createRow(rowIndex: number, cellRender: RenderComponent<any>, type: CellType) {
+    const cellStyle = type === CellType.body ?
+      {
+        borderBottom: '1px solid #eee',
+        borderRight: '1px solid #eee',
+        background: 'white',
+      } :
+      {
+
+      }
     const rowChildren = [];
     // 处理冻结列
     const frozenColElements: any[] = [];
@@ -90,6 +98,7 @@ export function makeTable(args: IMakeTableProps) {
           width: frozenColWidth,
           height: getRowHeight(props, rowIndex, _instanceProps),
           zIndex: 2,
+          ...cellStyle,
         }
       },
       ...frozenColElements,
@@ -103,9 +112,12 @@ export function makeTable(args: IMakeTableProps) {
       rowChildren.push(createElement(
         'td',
         {
-          style,
+          style: {
+            ...style,
+            ...cellStyle,
+          }
         },
-        createElement(children, {
+        createElement(cellRender, {
           columnIndex,
           data: itemData,
           isScrolling: useIsScrolling ? isScrolling : undefined,
@@ -147,7 +159,9 @@ export function makeTable(args: IMakeTableProps) {
   // body
   const tbodyRows = [];
   for (let rowIndex = rowStartIndex; rowIndex <= rowStopIndex; rowIndex++) {
-    tbodyRows.push(createRow(rowIndex, children as any, CellType.body))
+    if (rowIndex > 0) {
+      tbodyRows.push(createRow(rowIndex, children as any, CellType.body))
+    }
   }
   tbody = createElement(
     'tbody',

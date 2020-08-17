@@ -410,6 +410,7 @@ export default function createGridComponent({
       const estimatedTotalWidth = getEstimatedTotalWidth(this.props, this._instanceProps);
       const estimatedTotalHeight = getEstimatedTotalHeight(this.props, this._instanceProps);
 
+      const tableContent = [thead, tbody, tfoot].filter(item => item);
       return createElement(
         'div',
         {
@@ -434,15 +435,7 @@ export default function createGridComponent({
             pointerEvents: isScrolling ? 'none' : undefined,
             width: estimatedTotalWidth
           },
-          thead,
-          createElement(
-            'tbody',
-            {
-
-            },
-            tbody,
-          ),
-          tfoot,
+          ...tableContent,
         )
       );
     }
