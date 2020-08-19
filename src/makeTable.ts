@@ -1,5 +1,5 @@
-import { createElement, Fragment } from "react";
-import { Props, RenderComponent, defaultItemRowKey, defaultItemKey } from "./createGridComponent";
+import { createElement } from "react";
+import { defaultItemKey, defaultItemRowKey, Props, RenderComponent } from "./createGridComponent";
 
 
 type IVisibleRange = {
@@ -10,7 +10,7 @@ type IVisibleRange = {
 }
 
 enum CellType {
-  header = 'header',
+  head = 'head',
   body = 'body',
   foot = 'foot',
 }
@@ -54,15 +54,6 @@ export function makeTable(args: IMakeTableProps) {
   let tfoot;
 
   function createRow(rowIndex: number, cellRender: RenderComponent<any>, type: CellType) {
-    const cellStyle = type === CellType.body ?
-      {
-        borderBottom: '1px solid #eee',
-        borderRight: '1px solid #eee',
-        background: 'white',
-      } :
-      {
-
-      }
     const rowChildren = [];
     // 处理冻结列
     const frozenColElements: any[] = [];
@@ -98,7 +89,6 @@ export function makeTable(args: IMakeTableProps) {
           width: frozenColWidth,
           height: getRowHeight(props, rowIndex, _instanceProps),
           zIndex: 2,
-          ...cellStyle,
         }
       },
       ...frozenColElements,
@@ -112,10 +102,7 @@ export function makeTable(args: IMakeTableProps) {
       rowChildren.push(createElement(
         'td',
         {
-          style: {
-            ...style,
-            ...cellStyle,
-          }
+          style,
         },
         createElement(cellRender, {
           columnIndex,
@@ -129,7 +116,7 @@ export function makeTable(args: IMakeTableProps) {
     }
     let rowPosition = 'absolute';
     let zIndex = 1;
-    if (type === CellType.header) {
+    if (type === CellType.head) {
       rowPosition = 'sticky';
       zIndex = 2;
     }
@@ -152,7 +139,7 @@ export function makeTable(args: IMakeTableProps) {
     thead = createElement(
       'thead',
       {},
-      createRow(0, headerCellRender as any, CellType.header),
+      createRow(0, headerCellRender as any, CellType.head),
     );
   }
 
