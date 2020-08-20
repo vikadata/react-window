@@ -88,6 +88,7 @@ export type Props<T> = {
   hasFooter?: boolean; // 废弃
   headerCellRender?: RenderComponent<T>;
   footerCellRender?: RenderComponent<T>;
+  footerHeight?: number;
   onItemsRendered?: OnItemsRenderedCallback;
   onScroll?: OnScrollCallback;
   outerRef?: any;
@@ -385,6 +386,7 @@ export default function createGridComponent({
         useIsScrolling,
         width,
         frozenColCount = 0,
+        footerHeight = 50,
       } = this.props;
       const { isScrolling } = this.state;
 
@@ -410,7 +412,7 @@ export default function createGridComponent({
       const estimatedTotalWidth = getEstimatedTotalWidth(this.props, this._instanceProps);
       const estimatedTotalHeight = getEstimatedTotalHeight(this.props, this._instanceProps);
 
-      const tableContent = [thead, tbody, tfoot].filter(item => item);
+      const tableContent = [thead, tbody].filter(item => item);
       return createElement(
         'div',
         {
@@ -441,6 +443,20 @@ export default function createGridComponent({
             }
           },
           ...tableContent,
+        ),
+        createElement(
+          'div',
+          {
+            role: 'table-footer',
+            pointerEvents: isScrolling ? 'none' : undefined,
+            style: {
+              position: 'sticky',
+              bottom: 0,
+              height: footerHeight,
+              width: estimatedTotalWidth,
+            }
+          },
+          tfoot,
         )
       );
     }

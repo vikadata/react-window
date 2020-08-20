@@ -26,6 +26,14 @@ interface IMakeTableProps {
   isScrolling: boolean;
 }
 
+
+const resetCellStyle = (style: React.CSSProperties, type: CellType, footerHeight?: number) => {
+  return {
+    ...style,
+    height: type === CellType.foot ? footerHeight || style.height : style.height,
+  }
+}
+
 export function makeTable(args: IMakeTableProps) {
   const { props, visibleRange, _instanceProps, getEstimatedTotalWidth, getColumnWidth, getRowHeight, _getItemStyle, isScrolling } = args;
   const { rowStartIndex, rowStopIndex, columnStartIndex, columnStopIndex } = visibleRange;
@@ -44,8 +52,8 @@ export function makeTable(args: IMakeTableProps) {
     useIsScrolling,
     width,
     frozenColCount = 0,
-    hasHeader,
-    hasFooter,
+    footerCellRender,
+    footerHeight
   } = props;
   const estimatedTotalWidth = getEstimatedTotalWidth(props, _instanceProps);
 
@@ -70,7 +78,7 @@ export function makeTable(args: IMakeTableProps) {
           isScrolling: useIsScrolling ? isScrolling : undefined,
           key: itemKey!({ columnIndex, data: itemData, rowIndex }),
           rowIndex,
-          style,
+          style: resetCellStyle(style, type, footerHeight)
         })
       )
     })
@@ -82,7 +90,7 @@ export function makeTable(args: IMakeTableProps) {
           position: 'sticky',
           left: 0,
           width: frozenColWidth,
-          height: getRowHeight(props, rowIndex, _instanceProps),
+          height: CellType.foot ? footerHeight || getRowHeight(props, rowIndex, _instanceProps) : getRowHeight(props, rowIndex, _instanceProps),
           zIndex: 2,
         }
       },
@@ -93,7 +101,7 @@ export function makeTable(args: IMakeTableProps) {
 
     for (let columnIndex = columnStartIndex; columnIndex <= columnStopIndex; columnIndex++) {
       if (columnIndex < frozenColCount) continue;
-      const { width, left, } = _getItemStyle(rowIndex, columnIndex) as React.CSSProperties;
+      const { top, ...style } = _getItemStyle(rowIndex, columnIndex) as React.CSSProperties;
       rowChildren.push(
         createElement(cellRender, {
           columnIndex,
@@ -101,10 +109,7 @@ export function makeTable(args: IMakeTableProps) {
           isScrolling: useIsScrolling ? isScrolling : undefined,
           key: itemKey!({ columnIndex, data: itemData, rowIndex }),
           rowIndex,
-          style: {
-            width, left,
-            position: 'absolute',
-          },
+          style: resetCellStyle(style, type, footerHeight)
         })
       );
     }
@@ -158,18 +163,8 @@ export function makeTable(args: IMakeTableProps) {
   )
 
   // footer
-  if (hasFooter) {
-    tfoot = createElement(
-      'div',
-      {
-        role: 'table-footer',
-        style: {
-          position: 'fixed',
-          bottom: 0,
-        }
-      },
-      createRow(0, headerCellRender as any, CellType.foot),
-    );
+  if (footerCellRender) {
+    tfoot = createRow(0, footerCellRender as any, CellType.foot);
   }
 
   return {
