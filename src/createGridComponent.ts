@@ -454,6 +454,7 @@ export default function createGridComponent({
               bottom: 0,
               height: footerHeight,
               width: estimatedTotalWidth,
+              zIndex: 999,
             }
           },
           tfoot,

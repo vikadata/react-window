@@ -90,7 +90,7 @@ export function makeTable(args: IMakeTableProps) {
           position: 'sticky',
           left: 0,
           width: frozenColWidth,
-          height: CellType.foot ? footerHeight || getRowHeight(props, rowIndex, _instanceProps) : getRowHeight(props, rowIndex, _instanceProps),
+          height: type === CellType.foot ? footerHeight || getRowHeight(props, rowIndex, _instanceProps) : getRowHeight(props, rowIndex, _instanceProps),
           zIndex: 2,
         }
       },
