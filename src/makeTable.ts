@@ -64,25 +64,20 @@ export function makeTable(args: IMakeTableProps) {
       const { top, ...style } = _getItemStyle(rowIndex, columnIndex) as React.CSSProperties;
       thisRowTop = top;
       frozenColElements.push(
-        createElement(
-          'div',
-          {
-            style,
-          },
-          createElement(cellRender, {
-            columnIndex,
-            data: itemData,
-            isScrolling: useIsScrolling ? isScrolling : undefined,
-            key: itemKey!({ columnIndex, data: itemData, rowIndex }),
-            rowIndex,
-            style,
-          })
-        )
+        createElement(cellRender, {
+          columnIndex,
+          data: itemData,
+          isScrolling: useIsScrolling ? isScrolling : undefined,
+          key: itemKey!({ columnIndex, data: itemData, rowIndex }),
+          rowIndex,
+          style,
+        })
       )
     })
     const frozenCol = createElement(
-      'td',
+      'div',
       {
+        role: 'frozen-col',
         style: {
           position: 'sticky',
           left: 0,
@@ -98,21 +93,20 @@ export function makeTable(args: IMakeTableProps) {
 
     for (let columnIndex = columnStartIndex; columnIndex <= columnStopIndex; columnIndex++) {
       if (columnIndex < frozenColCount) continue;
-      const { top, ...style } = _getItemStyle(rowIndex, columnIndex) as React.CSSProperties;
-      rowChildren.push(createElement(
-        'td',
-        {
-          style,
-        },
+      const { width, left, } = _getItemStyle(rowIndex, columnIndex) as React.CSSProperties;
+      rowChildren.push(
         createElement(cellRender, {
           columnIndex,
           data: itemData,
           isScrolling: useIsScrolling ? isScrolling : undefined,
           key: itemKey!({ columnIndex, data: itemData, rowIndex }),
           rowIndex,
-          style,
+          style: {
+            width, left,
+            position: 'absolute',
+          },
         })
-      ));
+      );
     }
     let rowPosition = 'absolute';
     let zIndex = 1;
@@ -120,13 +114,13 @@ export function makeTable(args: IMakeTableProps) {
       rowPosition = 'sticky';
       zIndex = 2;
     }
-    const rowEle = createElement('tr', {
+    const rowEle = createElement('div', {
       key: itemRowKey!({ data: itemData, rowIndex }),
       'data-record-id': itemRowKey!({ data: itemData, rowIndex }),
       style: {
         top: thisRowTop,
         position: rowPosition,
-        display: 'flex',
+        display: 'inline-flex',
         width: estimatedTotalWidth,
         zIndex,
       }
@@ -135,10 +129,15 @@ export function makeTable(args: IMakeTableProps) {
   }
 
   // header
-  if (hasHeader) {
+  if (headerCellRender) {
     thead = createElement(
-      'thead',
-      {},
+      'div',
+      {
+        role: 'table-header',
+        style: {
+          height: '100%',
+        }
+      },
       createRow(0, headerCellRender as any, CellType.head),
     );
   }
@@ -151,16 +150,19 @@ export function makeTable(args: IMakeTableProps) {
     }
   }
   tbody = createElement(
-    'tbody',
-    {},
+    'div',
+    {
+      role: 'table-body',
+    },
     ...tbodyRows
   )
 
   // footer
   if (hasFooter) {
     tfoot = createElement(
-      'tfoot',
+      'div',
       {
+        role: 'table-footer',
         style: {
           position: 'fixed',
           bottom: 0,

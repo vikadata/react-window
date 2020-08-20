@@ -417,8 +417,9 @@ export default function createGridComponent({
           className,
           onScroll: this._onScroll,
           ref: this._outerRefSetter,
+          role: 'table-wrapper',
           style: {
-            position: 'relative',
+            position: 'absolute',
             height,
             width,
             overflow: 'auto',
@@ -429,11 +430,15 @@ export default function createGridComponent({
           }
         },
         createElement(
-          'table',
+          'div',
           {
-            height: estimatedTotalHeight,
+            role: 'table',
             pointerEvents: isScrolling ? 'none' : undefined,
-            width: estimatedTotalWidth
+            style: {
+              position: 'relative',
+              height: estimatedTotalHeight,
+              width: estimatedTotalWidth,
+            }
           },
           ...tableContent,
         )
