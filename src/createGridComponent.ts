@@ -1,9 +1,10 @@
 import memoizeOne from "memoize-one";
-import { createElement, PureComponent } from "react";
+import { createElement, PureComponent, Fragment } from "react";
 import { $Shape } from "utility-types";
 import { getRTLOffsetType, getScrollbarSize } from "./domHelpers";
 import { makeTable } from "./makeTable";
 import { cancelTimeout, requestTimeout, TimeoutID } from "./timer";
+import { ScrollBar } from "./scrollbar";
 
 type Direction = "ltr" | "rtl";
 export type ScrollToAlign = "auto" | "smart" | "center" | "start" | "end";
@@ -412,8 +413,47 @@ export default function createGridComponent({
       const estimatedTotalWidth = getEstimatedTotalWidth(this.props, this._instanceProps);
       const estimatedTotalHeight = getEstimatedTotalHeight(this.props, this._instanceProps);
 
+      const scrollbar = createElement(
+        Fragment,
+        {},
+        createElement(
+          ScrollBar,
+          {
+            offset: this.state.scrollTop,
+            height,
+            clientHeight: height,
+            totalLength: estimatedTotalHeight,
+            direction: 'column',
+            onColumnScrollChange: (dist: number) => {
+              const { scrollLeft } = this.state;
+              this.scrollTo({
+                scrollLeft,
+                scrollTop: dist,
+              })
+            },
+          }
+        ),
+        createElement(
+          ScrollBar,
+          {
+            offset: this.state.scrollLeft,
+            height: width,
+            clientHeight: width,
+            totalLength: estimatedTotalWidth,
+            direction: 'row',
+            onColumnScrollChange: (dist: number) => {
+              const { scrollTop } = this.state;
+              this.scrollTo({
+                scrollLeft: dist,
+                scrollTop,
+              })
+            },
+          }
+        )
+      );
+
       const tableContent = [thead, tbody].filter(item => item);
-      return createElement(
+      const table = createElement(
         'div',
         {
           className,
@@ -458,8 +498,20 @@ export default function createGridComponent({
             }
           },
           tfoot,
-        )
+        ),
       );
+      return createElement(
+        'div',
+        {
+          style: {
+            position: 'relative',
+            width,
+            height,
+          }
+        },
+        table,
+        scrollbar,
+      )
     }
 
     // _callOnItemsRendered: (overscanColumnStartIndex: number, overscanColumnStopIndex: number, overscanRowStartIndex: number, overscanRowStopIndex: number, visibleColumnStartIndex: number, visibleColumnStopIndex: number, visibleRowStartIndex: number, visibleRowStopIndex: number) => void;
