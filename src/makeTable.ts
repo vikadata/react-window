@@ -115,19 +115,24 @@ export function makeTable(args: IMakeTableProps) {
     }
     let rowPosition = 'absolute';
     let zIndex = 1;
+    let headerStyle = {};
     if (type === CellType.head) {
       rowPosition = 'sticky';
       zIndex = 2;
+      headerStyle = {
+        top: 0,
+      }
     }
     const rowEle = createElement('div', {
       key: itemRowKey!({ data: itemData, rowIndex }),
       'data-record-id': itemRowKey!({ data: itemData, rowIndex }),
       style: {
-        top: thisRowTop,
+        transform: `translateY(${thisRowTop}px)`,
         position: rowPosition,
         display: 'inline-flex',
         width: estimatedTotalWidth,
         zIndex,
+        ...headerStyle,
       }
     }, ...rowChildren);
     return rowEle;
@@ -135,16 +140,8 @@ export function makeTable(args: IMakeTableProps) {
 
   // header
   if (headerCellRender) {
-    thead = createElement(
-      'div',
-      {
-        role: 'table-header',
-        style: {
-          height: '100%',
-        }
-      },
-      createRow(0, headerCellRender as any, CellType.head),
-    );
+    const theadEle = createRow(0, headerCellRender as any, CellType.head);
+    thead = theadEle;
   }
 
   // body
@@ -158,6 +155,11 @@ export function makeTable(args: IMakeTableProps) {
     'div',
     {
       role: 'table-body',
+      style: {
+        height: '100%',
+        top: 0,
+        position: 'absolute',
+      }
     },
     ...tbodyRows
   )
