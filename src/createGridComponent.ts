@@ -84,6 +84,7 @@ export type Props<T> = {
   itemData: T;
   itemKey?: (params: { columnIndex: number; data: T; rowIndex: number; }) => any;
   itemRowKey?: (params: { rowIndex: number; data: T }) => any;
+  useScrollbar?: boolean;
   frozenColCount?: number;
   hasHeader?: boolean; // 废弃
   hasFooter?: boolean; // 废弃
@@ -386,6 +387,7 @@ export default function createGridComponent({
         style,
         useIsScrolling,
         width,
+        useScrollbar,
         frozenColCount = 0,
         footerHeight = 50,
       } = this.props;
@@ -413,7 +415,7 @@ export default function createGridComponent({
       const estimatedTotalWidth = getEstimatedTotalWidth(this.props, this._instanceProps);
       const estimatedTotalHeight = getEstimatedTotalHeight(this.props, this._instanceProps);
 
-      const scrollbar = createElement(
+      const scrollbar = useScrollbar ? createElement(
         Fragment,
         {},
         createElement(
@@ -450,7 +452,7 @@ export default function createGridComponent({
             },
           }
         )
-      );
+      ) : null;
 
       const tableContent = [thead, tbody].filter(item => item);
       const table = createElement(
