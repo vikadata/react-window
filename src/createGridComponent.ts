@@ -86,11 +86,11 @@ export type Props<T> = {
   itemRowKey?: (params: { rowIndex: number; data: T }) => any;
   useScrollbar?: boolean;
   frozenColCount?: number;
-  hasHeader?: boolean; // 废弃
-  hasFooter?: boolean; // 废弃
   headerCellRender?: RenderComponent<T>;
   footerCellRender?: RenderComponent<T>;
   footerHeight?: number;
+  tableStyle?: React.CSSProperties;
+  footerStyle?: React.CSSProperties;
   onItemsRendered?: OnItemsRenderedCallback;
   onScroll?: OnScrollCallback;
   outerRef?: any;
@@ -390,6 +390,8 @@ export default function createGridComponent({
         useScrollbar,
         frozenColCount = 0,
         footerHeight = 50,
+        tableStyle = {},
+        footerStyle = {},
       } = this.props;
       const { isScrolling } = this.state;
 
@@ -482,6 +484,7 @@ export default function createGridComponent({
               position: 'relative',
               height: estimatedTotalHeight,
               width: estimatedTotalWidth,
+              ...tableStyle,
             }
           },
           ...tableContent,
@@ -497,6 +500,7 @@ export default function createGridComponent({
               height: footerHeight,
               width: estimatedTotalWidth,
               zIndex: 999,
+              ...footerStyle,
             }
           },
           tfoot,
