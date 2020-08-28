@@ -185,9 +185,10 @@ const getOffsetForIndexAndAlignment = (itemType: ItemType, props: Props<any>, in
   // Get estimated total size after ItemMetadata is computed,
   // To ensure it reflects actual measurements instead of just estimates.
   const estimatedTotalSize = itemType === 'column' ? getEstimatedTotalWidth(props, instanceProps) : getEstimatedTotalHeight(props, instanceProps);
-
-  const maxOffset = Math.max(0, Math.min(estimatedTotalSize - size, itemMetadata.offset));
-  const minOffset = Math.max(0, itemMetadata.offset - size + scrollbarSize + itemMetadata.size);
+  const fixMinOffset = itemType === 'column' ? 0 : (props.footerHeight || 0);
+  const fixMaxOffset = itemType === 'column' ? getFrozenColWidth(props, instanceProps) : getHeaderColHeight(props, instanceProps);
+  const maxOffset = Math.max(0, Math.min(estimatedTotalSize - size, itemMetadata.offset - fixMaxOffset));
+  const minOffset = Math.max(0, itemMetadata.offset - size + scrollbarSize + itemMetadata.size + fixMinOffset);
 
   if (align === 'smart') {
     if (scrollOffset >= minOffset - size && scrollOffset <= maxOffset + size) {
@@ -220,6 +221,22 @@ const getOffsetForIndexAndAlignment = (itemType: ItemType, props: Props<any>, in
 
   }
 };
+
+const getHeaderColHeight = (props: Props<any>, instanceProps: InstanceProps) => {
+  if (props.headerCellRender) {
+    console.log(instanceProps.rowMetadataMap);
+    return instanceProps.rowMetadataMap[0].size;
+  }
+  return 0;
+};
+
+const getFrozenColWidth = (props: Props<any>, instanceProps: InstanceProps) => {
+  let frozenColWidth = 0;
+  Array(props.frozenColCount).fill(1).forEach((item, columnIndex) => {
+    frozenColWidth += instanceProps.columnMetadataMap[columnIndex].size
+  });
+  return frozenColWidth;
+}
 
 const VariableSizeGrid = createGridComponent({
   getColumnOffset: (props: Props<any>, index: number, instanceProps: InstanceProps): number => getItemMetadata('column', props, index, instanceProps).offset,
@@ -264,11 +281,13 @@ const VariableSizeGrid = createGridComponent({
   getRowStopIndexForStartIndex: (props: Props<any>, startIndex: number, scrollTop: number, instanceProps: InstanceProps): number => {
     const {
       rowCount,
-      height
+      height,
+      footerHeight,
     } = props;
 
+    const headerRow = getItemMetadata('row', props, 0, instanceProps);
     const itemMetadata = getItemMetadata('row', props, startIndex, instanceProps);
-    const maxOffset = scrollTop + height;
+    const maxOffset = footerHeight ? scrollTop + height - footerHeight - headerRow.size : scrollTop + height - headerRow.size;
 
     let offset = itemMetadata.offset + itemMetadata.size;
     let stopIndex = startIndex;
