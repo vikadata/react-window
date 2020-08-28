@@ -621,7 +621,7 @@ export default function createGridComponent({
         overscanColumnCount,
         overscanColumnsCount,
         overscanCount,
-        rowCount
+        rowCount,
       } = this.props;
       const {
         horizontalScrollDirection,
@@ -635,8 +635,9 @@ export default function createGridComponent({
         return [0, 0, 0, 0];
       }
 
-      const startIndex = getColumnStartIndexForOffset(this.props, scrollLeft, this._instanceProps);
-      const stopIndex = getColumnStopIndexForStartIndex(this.props, startIndex, scrollLeft, this._instanceProps);
+      const frozenColWidth = 114;
+      const startIndex = getColumnStartIndexForOffset(this.props, scrollLeft + frozenColWidth, this._instanceProps);
+      const stopIndex = getColumnStopIndexForStartIndex(this.props, startIndex, scrollLeft + frozenColWidth, this._instanceProps);
 
       // Overscan by one item in each direction so that tab/focus works.
       // If there isn't at least one extra item, tab loops back around.
@@ -652,7 +653,8 @@ export default function createGridComponent({
         overscanCount,
         overscanRowCount,
         overscanRowsCount,
-        rowCount
+        rowCount,
+        headerCellRender,
       } = this.props;
       const {
         isScrolling,
@@ -666,7 +668,8 @@ export default function createGridComponent({
         return [0, 0, 0, 0];
       }
 
-      const startIndex = getRowStartIndexForOffset(this.props, scrollTop, this._instanceProps);
+      let startIndex = getRowStartIndexForOffset(this.props, scrollTop, this._instanceProps);
+      if (headerCellRender && startIndex > 1) startIndex -= 1;
       const stopIndex = getRowStopIndexForStartIndex(this.props, startIndex, scrollTop, this._instanceProps);
 
       // Overscan by one item in each direction so that tab/focus works.
@@ -761,6 +764,14 @@ export default function createGridComponent({
         this._getItemStyleCache(-1, null, null);
       });
     };
+    _getFrozenColWidth = () => {
+      let frozenColWidth = 0;
+      Array(this.props.frozenColCount).fill(1).forEach((item, columnIndex) => {
+        console.log(columnIndex);
+        frozenColWidth += getColumnWidth(this.props, columnIndex, this._instanceProps)
+      });
+      return frozenColWidth;
+    }
   };
 }
 

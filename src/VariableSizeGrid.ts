@@ -224,7 +224,6 @@ const getOffsetForIndexAndAlignment = (itemType: ItemType, props: Props<any>, in
 
 const getHeaderColHeight = (props: Props<any>, instanceProps: InstanceProps) => {
   if (props.headerCellRender) {
-    console.log(instanceProps.rowMetadataMap);
     return instanceProps.rowMetadataMap[0].size;
   }
   return 0;
