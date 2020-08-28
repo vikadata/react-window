@@ -1,6 +1,6 @@
 {
   "name": "@vikadata/vikatable",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "A react table with frozen columns and row headers based on react-window",
   "author": "Brian Vaughn <brian.david.vaughn@gmail.com> (https://github.com/bvaughn/)",
   "contributors": [
@@ -46,7 +46,8 @@
     "lint": "eslint '**/*.js'",
     "test": "cross-env CI=1 react-scripts test --env=jsdom",
     "build": "tsc",
-    "start": "tsc -w"
+    "start": "tsc -w",
+    "prepublish": "yarn build"
   },
   "lint-staged": {
     "{website,src}/**/*.{js,json,css}": [
