@@ -92,7 +92,6 @@ export function makeTable(args: IMakeTableProps) {
           left: 0,
           width: frozenColWidth,
           height: type === CellType.foot ? footerHeight || getRowHeight(props, rowIndex, _instanceProps) : getRowHeight(props, rowIndex, _instanceProps),
-          zIndex: 2,
         }
       },
       ...frozenColElements,
@@ -115,11 +114,9 @@ export function makeTable(args: IMakeTableProps) {
       );
     }
     let rowPosition = 'absolute';
-    let zIndex = 1;
     let headerStyle = {};
     if (type === CellType.head) {
       rowPosition = 'sticky';
-      zIndex = 2;
       headerStyle = {
         top: 0,
       }
@@ -132,7 +129,6 @@ export function makeTable(args: IMakeTableProps) {
         position: rowPosition,
         display: 'inline-flex',
         width: estimatedTotalWidth,
-        zIndex,
         ...headerStyle,
       },
       className: rowClassName({ rowIndex, data: itemData }),
