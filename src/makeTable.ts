@@ -1,5 +1,5 @@
 import { createElement } from "react";
-import { defaultItemKey, defaultItemRowKey, Props, RenderComponent } from "./createGridComponent";
+import { defaultItemKey, defaultItemRowKey, defaultRowClassName, Props, RenderComponent } from "./createGridComponent";
 
 
 type IVisibleRange = {
@@ -53,7 +53,8 @@ export function makeTable(args: IMakeTableProps) {
     width,
     frozenColCount = 0,
     footerCellRender,
-    footerHeight
+    footerHeight,
+    rowClassName = defaultRowClassName,
   } = props;
   const estimatedTotalWidth = getEstimatedTotalWidth(props, _instanceProps);
 
@@ -133,7 +134,8 @@ export function makeTable(args: IMakeTableProps) {
         width: estimatedTotalWidth,
         zIndex,
         ...headerStyle,
-      }
+      },
+      className: rowClassName({ rowIndex, data: itemData }),
     }, ...rowChildren);
     return rowEle;
   }

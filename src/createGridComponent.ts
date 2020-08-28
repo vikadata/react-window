@@ -84,6 +84,7 @@ export type Props<T> = {
   itemData: T;
   itemKey?: (params: { columnIndex: number; data: T; rowIndex: number; }) => any;
   itemRowKey?: (params: { rowIndex: number; data: T }) => any;
+  rowClassName?: (params: { rowIndex: number; data: T }) => any;
   useScrollbar?: boolean;
   frozenColCount?: number;
   headerCellRender?: RenderComponent<T>;
@@ -157,6 +158,11 @@ export const defaultItemRowKey = ({ data, rowIndex }: {
   data: any;
   rowIndex: number
 }) => `${rowIndex}`;
+
+export const defaultRowClassName = ({ rowIndex }: {
+  rowIndex: number;
+  data: any;
+}) => `table-row`;
 
 
 // In DEV mode, this Set helps us only log a warning once per component instance.
